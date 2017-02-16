@@ -1,0 +1,300 @@
+<!-- ODE Simulation of the cart-pole task
+     Author: Wouter Caarls [w.caarls@tudelft.nl] -->
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+	<version>1.0</version>
+	<loglevel>info</loglevel>
+	<constants>
+		<irrelevantmass>0.001</irrelevantmass>
+		<irrelevantinertia>0.001</irrelevantinertia>
+        
+        <!-- Materials -->
+		<lynoleum>0</lynoleum>
+		<rubber>1</rubber>
+		<glass>2</glass>
+
+        <!-- Cart parameters -->
+        <baselength>0.4</baselength>
+		<basethickness>0.02</basethickness>
+		<basemass>2</basemass>
+		<wheelradius>0.05</wheelradius>
+		<wheelmass>0.5</wheelmass>
+        
+        <!-- Pole parameters -->
+        <polelength>0.4</polelength>
+		<poleradius>0.01</poleradius>
+		<polemass>0.1</polemass>
+        
+        <!-- Initialization parameters -->
+		<maxinitangle>0.15*_pi</maxinitangle>
+	</constants>
+    <strings>
+        <s>true</s>
+        <s>false</s>
+        <s>info</s>
+        <s>pole</s>
+        <s>base</s>
+        <s>wheel</s>
+        <s>torque</s>
+        <s>motorjoint</s>
+        <s>polejoint</s>
+        <s>ball1</s>
+        <s>ball2</s>
+        <s>cylinder</s>
+        <s>sphere</s>
+        <s>surface</s>
+        <s>plane</s>
+        <s>hinge</s>
+        <s>floor</s>
+        <s>robot</s>
+    </strings>
+	<ode>
+		<globalK>3.3E6</globalK>
+		<globalD>0.0</globalD>
+		<gravityZ>-9.81</gravityZ>
+		<steptime>0.005</steptime>
+		<subsamplingfactor>1</subsamplingfactor>
+        
+        <!-- Robot -->
+		<object>
+			<name>robot</name>
+			<drawbodies>true</drawbodies>
+			<drawcoms>true</drawcoms>
+			<drawgeoms>true</drawgeoms>
+			
+            <!-- Random initial condition of pole angle -->
+			<initialcondition>
+				<bodyname>pole</bodyname>
+				<rotation>
+					<axis>
+						<x>1</x>
+						<y>0</y>
+						<z>0</z>
+					</axis>
+					<angle>x*2*maxinitangle-maxinitangle</angle>
+				</rotation>
+			</initialcondition>
+			<initialcondition>
+				<bodyname>base</bodyname>
+				<rotation>
+					<axis>
+						<x>1</x>
+						<y>0</y>
+						<z>0</z>
+					</axis>
+					<angle>0</angle>
+				</rotation>
+			</initialcondition>
+			<initialcondition>
+				<bodyname>wheel</bodyname>
+				<rotation>
+					<axis>
+						<x>1</x>
+						<y>0</y>
+						<z>0</z>
+					</axis>
+					<angle>0</angle>
+				</rotation>
+			</initialcondition>
+            
+            <!-- Bodies -->
+			<body>
+				<name>base</name>
+				<mass>basemass</mass>
+				<IXX>(1/12)*basemass*(baselength^2+basethickness^2)</IXX>
+				<IYY>(1/12)*basemass*(baselength^2+basethickness^2)</IYY>
+				<IZZ>(1/12)*basemass*(baselength^2+baselength^2)</IZZ>
+				<anchor>
+					<name>wheel</name>
+					<x>0</x>
+					<y>0</y>
+					<z>0</z>
+				</anchor>
+				<anchor>
+					<name>pole</name>
+					<x>0</x>
+					<y>0</y>
+					<z>0</z>
+				</anchor>
+				<drawinfo>
+					<box comment="base">
+						<color>
+							<r>0.1</r>
+							<g>0.1</g>
+							<b>0.8</b>
+						</color>
+						<dx>baselength</dx>
+						<dy>baselength</dy>
+						<dz>basethickness</dz>
+					</box>
+				</drawinfo>
+			</body>
+			<body>
+				<name>wheel</name>
+				<mass>wheelmass</mass>
+				<IXX>(1/2)*wheelmass*wheelradius^2</IXX>
+				<IYY>(1/12)*wheelmass*(3*wheelradius^2+baselength^2)</IYY>
+				<IZZ>(1/12)*wheelmass*(3*wheelradius^2+baselength^2)</IZZ>
+				<anchor>
+					<name>base</name>
+					<x>0</x>
+					<y>0</y>
+					<z>0</z>
+				</anchor>
+			</body>
+			<body>
+				<name>pole</name>
+				<mass>polemass</mass>
+				<IXX>(1/12)*polemass*(3*poleradius^2+polelength^2)</IXX>
+				<IYY>(1/12)*polemass*(3*poleradius^2+polelength^2)</IYY>
+				<IZZ>(1/2)*polemass*poleradius^2</IZZ>
+				<anchor>
+					<name>base</name>
+					<x>0</x>
+					<y>0</y>
+					<z>-polelength/2</z>
+				</anchor>
+				<drawinfo>
+					<box comment="pole">
+						<color>
+							<r>0.1</r>
+							<g>0.1</g>
+							<b>0.8</b>
+						</color>
+						<dx>poleradius</dx>
+						<dy>poleradius</dy>
+						<dz>polelength</dz>
+					</box>
+				</drawinfo>
+			</body>
+            
+            <!-- Joints -->
+			<joint>
+				<name>motorjoint</name>
+				<type>hinge</type>
+				<anchor1>
+					<bodyname>base</bodyname>
+					<anchorname>wheel</anchorname>
+				</anchor1>
+				<anchor2>
+					<bodyname>wheel</bodyname>
+					<anchorname>base</anchorname>
+				</anchor2>
+				<axisX>1</axisX>
+				<axisY>0</axisY>
+				<axisZ>0</axisZ>
+				<motor>
+					<type>torque</type>
+					<lineardamping>0.08</lineardamping>
+				</motor>
+			</joint>
+			<joint>
+				<name>polejoint</name>
+				<type>hinge</type>
+				<anchor1>
+					<bodyname>base</bodyname>
+					<anchorname>pole</anchorname>
+				</anchor1>
+				<anchor2>
+					<bodyname>pole</bodyname>
+					<anchorname>base</anchorname>
+				</anchor2>
+				<axisX>1</axisX>
+				<axisY>0</axisY>
+				<axisZ>0</axisZ>
+			</joint>
+            
+            <!-- Collision geometries -->
+			<geom>
+				<name>wheel</name>
+				<bodyname>wheel</bodyname>
+				<type>cylinder</type>
+				<material>rubber</material>
+				<radius>wheelradius</radius>
+				<length>baselength</length>
+				<x>0</x>				
+				<y>0</y>
+				<z>0</z>				
+				<rotation>
+					<axis>
+						<x>0</x>
+						<y>1</y>
+						<z>0</z>
+					</axis>
+					<angle>0.5*_pi</angle>
+				</rotation>
+			</geom>
+			<geom>
+				<name>ball1</name>
+				<bodyname>base</bodyname>
+				<type>sphere</type>
+				<material>glass</material>
+				<radius>wheelradius</radius>
+				<x>0</x>				
+				<y>-baselength/2</y>
+				<z>0</z>
+			</geom>
+			<geom>
+				<name>ball2</name>
+				<bodyname>base</bodyname>
+				<type>sphere</type>
+				<material>glass</material>
+				<radius>wheelradius</radius>
+				<length></length>
+				<x>0</x>				
+				<y>baselength/2</y>
+				<z>0</z>				
+			</geom>
+
+            <!-- Initial position -->
+			<fixedpoint>
+				<bodyname>base</bodyname>
+				<bodyX>0</bodyX>
+				<bodyY>0</bodyY>
+				<bodyZ>0</bodyZ>
+				<worldX>0</worldX>
+				<worldY>0</worldY>
+				<worldZ>wheelradius</worldZ>
+			</fixedpoint>
+		</object>
+        
+        <!-- Floor -->
+		<object>
+			<name>floor</name>
+			<geom>
+				<name>surface</name>
+				<type>plane</type>
+				<material>lynoleum</material>
+				<A>0</A>
+				<B>0</B>
+				<C>1</C>
+				<D>0</D>		
+			</geom>	
+		</object>
+        
+		<collisions>
+			<drawcontacts>false</drawcontacts>
+			<contact>
+				<material1>lynoleum</material1>
+				<material2>rubber</material2>
+				<K>6000</K>
+				<D>300</D>
+				<mu>1000</mu>
+				<approximation comment="1 means friction pyramid approximation">1</approximation>
+			</contact>
+			<contact>
+				<material1>lynoleum</material1>
+				<material2>glass</material2>
+				<K>6000</K>
+				<D>300</D>
+				<mu>0</mu>
+			</contact>
+			<collision>
+				<object1>floor</object1>
+				<object2>robot</object2>
+			</collision>
+		</collisions>
+	</ode>
+</configuration>
+
